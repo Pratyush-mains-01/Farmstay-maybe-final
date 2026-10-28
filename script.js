@@ -1129,9 +1129,10 @@ chatInput.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventD
 /* ============================================================
    HOME PAGE: ROOMS PREVIEW + DELAYED BOOK BUTTON
    ============================================================ */
-(function initRoomsPreview() {
+function renderRoomsPreview() {
   const grid = $('rooms-grid');
   if (!grid) return; // home page only
+  grid.textContent = '';
   ROOMS.forEach(r => {
     const card = el('div', 'room-card reveal');
     const meta = el('p', 'room-meta', 'Sleeps up to ' + r.capacity + '  ·  ' + r.minNights + '–' + plural(r.maxNights, 'night'));
@@ -1143,7 +1144,8 @@ chatInput.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventD
     grid.appendChild(card);
     observeReveal(card);
   });
-})();
+}
+renderRoomsPreview();
 
 // On the home page the floating "Book Now" button only appears once visitors scroll down to the rooms.
 (function delayedBookButton() {
@@ -1172,6 +1174,24 @@ document.addEventListener('keydown', e => {
 });
 
 $('year').textContent = new Date().getFullYear();
+
+// When the farmstay server is running, it decides the rooms (names, sizes, rules, closed dates).
+// Without a server (for example when previewing the files from a folder) the ROOMS list at the top of this file is used.
+async function syncRoomsFromServer() {
+  if (location.protocol === 'file:') return;
+  try {
+    const res = await fetch(API + '/api/rooms', { cache: 'no-store' });
+    if (!res.ok) return;
+    const data = await res.json();
+    if (!data || !Array.isArray(data.rooms) || !data.rooms.length) return;
+    ROOMS.splice(0, ROOMS.length, ...data.rooms.map(r => Object.assign({ booked: [], closed: [] }, r)));
+    Object.keys(availCache).forEach(k => delete availCache[k]);
+    if (bookingRooms) bookingRooms.refresh();
+    if (modalRooms) modalRooms.refresh();
+    renderRoomsPreview();
+  } catch (_) { /* no server: keep the built-in list */ }
+}
+syncRoomsFromServer();
 
 // Gallery page: build the photo grid
 if ($('masonry-grid')) initGallery();

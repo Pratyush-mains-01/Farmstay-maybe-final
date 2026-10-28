@@ -1051,6 +1051,7 @@ textarea.form-control { min-height: 120px; resize: vertical; }
   background: rgba(201,169,110,0.08);
   box-shadow: 0 0 16px rgba(201,169,110,0.2);
 }
+.social-icon svg { width: 20px; height: 20px; display: block; }
 .contact-form-wrap {
   background: var(--muted-slate);
   border: 1px solid var(--glass-border);
@@ -1494,6 +1495,13 @@ section[id] { scroll-margin-top: calc(var(--nav-h) + 8px); }
 .rooms-actions, .cta-actions { display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; }
 .cta-actions { position: relative; z-index: 1; }
 #cta-section { border-top: 1px solid var(--glass-border); }
+
+/* the floating Book Now button stays hidden on the home page until visitors reach the rooms */
+body[data-page="home"] #float-book-btn {
+  opacity: 0; visibility: hidden; pointer-events: none;
+  transition: opacity 0.4s, visibility 0.4s, transform 0.3s var(--transition), box-shadow 0.3s, padding 0.3s;
+}
+body[data-page="home"].book-visible #float-book-btn { opacity: 1; visibility: visible; pointer-events: auto; }
 
 @media (max-width: 1024px) {
   .split { gap: 2.75rem; }
