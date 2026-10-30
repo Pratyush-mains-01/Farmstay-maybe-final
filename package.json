@@ -4,9 +4,12 @@
   "description": "Website server and owner panel for Mar Me Yullong Farmstay",
   "main": "server.js",
   "scripts": {
-    "start": "node server.js"
+    "start": "node server.js",
+    "set-domain": "node set-domain.js"
   },
-  "engines": { "node": ">=18" },
+  "engines": {
+    "node": ">=18"
+  },
   "dependencies": {
     "express": "^4.21.0"
   }

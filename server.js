@@ -5,6 +5,9 @@
    - stores booking requests in data/db.json
    - gives the website its room list and which dates are taken
    - protects the owner panel (/admin/) with a password
+   - guest reviews (live straight away; the owner can delete any), contact messages,
+     newsletter sign-ups and the FAQ chat
+   - emails the owner about new activity (Resend)
    ============================================================ */
 const fs = require('fs');
 const path = require('path');
@@ -33,6 +36,10 @@ const PUBLIC_DIR = path.resolve(process.env.PUBLIC_DIR || path.join(__dirname, '
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || '';
 const COOKIE_SECURE = process.env.COOKIE_SECURE === 'true';
 const SESSION_DAYS = 7;
+// Email alerts to the owner (optional). Leave RESEND_API_KEY empty to switch them off.
+const RESEND_API_KEY = process.env.RESEND_API_KEY || '';
+const ADMIN_EMAIL = process.env.ADMIN_EMAIL || '';
+const MAIL_FROM = process.env.MAIL_FROM || 'Farmstay Website <onboarding@resend.dev>';
 
 if (ADMIN_PASSWORD.length < 8 || ADMIN_PASSWORD === 'change-this-password') {
   console.error('\n  The owner password is not set.\n  Copy ".env.example" to ".env" and set ADMIN_PASSWORD (at least 8 characters), then start again.\n');
@@ -50,12 +57,13 @@ const roomsFile = path.join(DATA_DIR, 'rooms.json');
 const dbFile = path.join(DATA_DIR, 'db.json');
 const secretFile = path.join(DATA_DIR, '.secret');
 if (!fs.existsSync(roomsFile)) fs.writeFileSync(roomsFile, JSON.stringify(DEFAULT_ROOMS, null, 2));
-if (!fs.existsSync(dbFile)) fs.writeFileSync(dbFile, JSON.stringify({ nextRef: 1001, bookings: [], blocks: [] }, null, 2));
+if (!fs.existsSync(dbFile)) fs.writeFileSync(dbFile, JSON.stringify({ nextRef: 1001, bookings: [], blocks: [], reviews: [], messages: [], subscribers: [] }, null, 2));
 if (!fs.existsSync(secretFile)) fs.writeFileSync(secretFile, crypto.randomBytes(32).toString('hex'), { mode: 0o600 });
 const SECRET = fs.readFileSync(secretFile, 'utf8').trim();
 
 let db = JSON.parse(fs.readFileSync(dbFile, 'utf8'));
 db.bookings = db.bookings || []; db.blocks = db.blocks || []; db.nextRef = db.nextRef || 1001;
+db.reviews = db.reviews || []; db.messages = db.messages || []; db.subscribers = db.subscribers || [];
 function save() {
   try { fs.copyFileSync(dbFile, dbFile.replace('.json', '.backup.json')); } catch (_) { /* first save */ }
   const tmp = dbFile + '.tmp';
@@ -153,6 +161,45 @@ function requireAuth(req, res, next) {
   res.status(401).json({ error: 'Please log in.' });
 }
 
+/* ---------- email alerts to the owner (Resend) ---------- */
+// Never blocks or breaks a guest's request: if the email fails, the problem is only written to the server log.
+function notifyOwner(subject, text, replyTo) {
+  if (!RESEND_API_KEY || !ADMIN_EMAIL) return;
+  const payload = { from: MAIL_FROM, to: [ADMIN_EMAIL], subject: cleanLine(subject, 150), text };
+  if (replyTo && EMAIL.test(replyTo)) payload.reply_to = replyTo;
+  fetch('https://api.resend.com/emails', {
+    method: 'POST',
+    headers: { Authorization: 'Bearer ' + RESEND_API_KEY, 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload),
+    signal: AbortSignal.timeout(10000),
+  }).then(async r => {
+    if (!r.ok) console.error('Email alert FAILED (' + r.status + '): ' + (await r.text()).slice(0, 300));
+  }).catch(e => console.error('Email alert FAILED: ' + e.message));
+}
+
+/* ---------- FAQ chat ----------
+   Check every answer below is TRUE for your farmstay: guests will read these as facts.
+   The first matching keyword wins, so put the more specific ones first. */
+const FAQS = [
+  { keywords: ['check in', 'checkin', 'check-in', 'arrive', 'arrival'], answer: 'Check-in is from 2:00 PM. Let us know if you need to arrive earlier.' },
+  { keywords: ['check out', 'checkout', 'check-out'], answer: 'Check-out is by 11:00 AM.' },
+  { keywords: ['pet', 'dog', 'cat'], answer: 'We currently do not allow pets, with the exception of service animals.' },
+  { keywords: ['breakfast', 'food', 'meal'], answer: 'Breakfast is included with every stay, served 8-10 AM.' },
+  { keywords: ['wifi', 'wi-fi', 'internet'], answer: 'Yes, free WiFi is available throughout the property.' },
+  { keywords: ['parking', 'car'], answer: 'Free on-site parking is available for all guests.' },
+  { keywords: ['cancel', 'refund'], answer: 'Cancellations made 48 hours before check-in are fully refundable.' },
+  { keywords: ['price', 'cost', 'rate', 'how much'], answer: 'Rates vary by season and room type. Please check our Bookings page or contact us for exact pricing.' },
+  { keywords: ['availability', 'available', 'vacancy'], answer: 'You can check availability directly on our Bookings page by selecting your dates.' },
+  { keywords: ['contact', 'phone', 'number', 'reach'], answer: 'You can reach us via the Contact page or the WhatsApp button on the site.' },
+];
+const FAQ_FALLBACK = "I'm not sure about that one. Please reach out through our Contact page or WhatsApp and we'll help directly!";
+function matchFaq(message) {
+  const text = message.toLowerCase();
+  const hit = FAQS.find(f => f.keywords.some(k => text.includes(k)));
+  return hit ? hit.answer : FAQ_FALLBACK;
+}
+const monthYear = iso => new Date(iso).toLocaleDateString('en-GB', { month: 'long', year: 'numeric', timeZone: TIMEZONE });
+
 /* ---------- app ---------- */
 const app = express();
 app.disable('x-powered-by');
@@ -227,7 +274,80 @@ app.post('/api/bookings', bookingLimiter, (req, res) => {
     occasion: cleanLine(b.occasion, 40), timeSlot: cleanLine(b.timeSlot, 20), requests: clean(b.requests, 1000), note: '',
   });
   save();
+  notifyOwner('New booking request ' + ref + ' from ' + name,
+    ['A guest asked to book through the website. Open the owner panel to confirm or decline.', '',
+     'Reference: ' + ref, 'Room: ' + room.name, 'Dates: ' + niceRange(b.checkIn, b.checkOut) + ' (' + nights + (nights === 1 ? ' night)' : ' nights)'),
+     'Guests: ' + guests, 'Name: ' + name, 'Email: ' + email, 'Phone: ' + (phone || 'not given'),
+     'Occasion: ' + (cleanLine(b.occasion, 40) || 'not given'), 'Arrival time: ' + (cleanLine(b.timeSlot, 20) || 'not given'),
+     'Guest note: ' + (clean(b.requests, 1000) || 'none')].join('\n'), email);
   res.status(201).json({ ok: true, ref });
+});
+
+/* ---------- reviews ---------- */
+// Every review is public as soon as it is sent, but only name, stars, text and month are shown (never the email).
+app.get('/api/reviews', (req, res) => {
+  res.setHeader('Cache-Control', 'no-store');
+  const reviews = db.reviews.slice().sort((a, b) => (a.createdAt < b.createdAt ? 1 : -1))
+    .map(r => ({ name: r.name, stars: r.stars, text: r.text, date: monthYear(r.createdAt) }));
+  res.json({ reviews });
+});
+const reviewLimiter = limiter(5, 3600000, 'Too many reviews from this connection. Please try again later.');
+app.post('/api/reviews', reviewLimiter, (req, res) => {
+  const b = req.body || {};
+  const name = cleanLine(b.name, 80);
+  if (name.length < 2) return bad(res, 'Please enter your name.');
+  const email = cleanLine(b.email, 120).toLowerCase();
+  if (!EMAIL.test(email)) return bad(res, 'Please enter a valid email address.');
+  const stars = Number(b.stars);
+  if (!Number.isInteger(stars) || stars < 1 || stars > 5) return bad(res, 'Please choose a star rating from 1 to 5.');
+  const text = clean(b.comment != null ? b.comment : b.text, 1000);
+  if (text.length < 5) return bad(res, 'Please write a few words about your stay.');
+  if (db.reviews.some(r => r.email === email && r.text === text)) return res.status(200).json({ ok: true });
+  db.reviews.push({ id: crypto.randomBytes(6).toString('hex'), name, email, stars, text, createdAt: new Date().toISOString() });
+  save();
+  notifyOwner('New ' + stars + '-star review from ' + name,
+    'This review is live on the website now. If you do not want it there, delete it in the owner panel (Messages & reviews tab).\n\n' + stars + ' stars\n' + name + ' <' + email + '>\n\n' + text, email);
+  res.status(201).json({ ok: true });
+});
+
+/* ---------- contact form ---------- */
+const contactLimiter = limiter(5, 3600000, 'Too many messages from this connection. Please try again later, or call or WhatsApp us.');
+app.post('/api/contact', contactLimiter, (req, res) => {
+  const b = req.body || {};
+  const name = cleanLine(b.name, 80);
+  if (name.length < 2) return bad(res, 'Please enter your name.');
+  const email = cleanLine(b.email, 120).toLowerCase();
+  if (!EMAIL.test(email)) return bad(res, 'Please enter a valid email address.');
+  const phone = cleanLine(b.phone, 30);
+  const subject = cleanLine(b.subject, 120);
+  if (subject.length < 2) return bad(res, 'Please add a subject.');
+  const message = clean(b.message, 2000);
+  if (message.length < 5) return bad(res, 'Please write your message.');
+  db.messages.push({ id: crypto.randomBytes(6).toString('hex'), name, email, phone, subject, message, done: false, createdAt: new Date().toISOString() });
+  save();
+  notifyOwner('New message: ' + subject, 'From: ' + name + ' <' + email + '>\nPhone: ' + (phone || 'not given') + '\n\n' + message, email);
+  res.status(201).json({ ok: true });
+});
+
+/* ---------- newsletter ---------- */
+const newsletterLimiter = limiter(10, 3600000, 'Too many sign-ups from this connection. Please try again later.');
+app.post('/api/newsletter', newsletterLimiter, (req, res) => {
+  const email = cleanLine(req.body && req.body.email, 120).toLowerCase();
+  if (!EMAIL.test(email)) return bad(res, 'Please enter a valid email address.');
+  if (!db.subscribers.some(x => x.email === email)) { // already subscribed: just say thank you again
+    db.subscribers.push({ id: crypto.randomBytes(6).toString('hex'), email, createdAt: new Date().toISOString() });
+    save();
+    notifyOwner('New newsletter subscriber', 'New subscriber: ' + email);
+  }
+  res.status(201).json({ ok: true });
+});
+
+/* ---------- FAQ chat ---------- */
+const chatLimiter = limiter(60, 600000, 'You are sending messages very fast. Please wait a moment.');
+app.post('/api/chat', chatLimiter, (req, res) => {
+  const message = cleanLine(req.body && req.body.message, 300);
+  if (!message) return bad(res, 'Please type a message.');
+  res.json({ reply: matchFaq(message) });
 });
 
 /* ============================================================
@@ -252,6 +372,9 @@ admin.get('/data', (req, res) => {
     today: today(), rooms: getRooms(),
     bookings: db.bookings.slice().sort((a, b) => (a.createdAt < b.createdAt ? 1 : -1)),
     blocks: db.blocks.slice().sort((a, b) => (a.from < b.from ? -1 : 1)),
+    reviews: db.reviews.slice().sort((a, b) => (a.createdAt < b.createdAt ? 1 : -1)),
+    messages: db.messages.slice().sort((a, b) => (a.createdAt < b.createdAt ? 1 : -1)),
+    subscribers: db.subscribers.slice().sort((a, b) => (a.createdAt < b.createdAt ? 1 : -1)),
   });
 });
 
@@ -355,10 +478,41 @@ admin.delete('/blocks/:id', (req, res) => {
   res.json({ ok: true });
 });
 
+// guest reviews: the owner can delete any of them
+admin.delete('/reviews/:id', (req, res) => {
+  const before = db.reviews.length;
+  db.reviews = db.reviews.filter(x => x.id !== req.params.id);
+  if (db.reviews.length === before) return bad(res, 'Review not found.', 404);
+  save();
+  res.json({ ok: true });
+});
+// contact messages: mark as dealt with, or delete
+admin.post('/messages/:id/done', (req, res) => {
+  const m = db.messages.find(x => x.id === req.params.id);
+  if (!m) return bad(res, 'Message not found.', 404);
+  m.done = !(req.body && req.body.done === false);
+  save();
+  res.json({ ok: true, message: m });
+});
+admin.delete('/messages/:id', (req, res) => {
+  const before = db.messages.length;
+  db.messages = db.messages.filter(x => x.id !== req.params.id);
+  if (db.messages.length === before) return bad(res, 'Message not found.', 404);
+  save();
+  res.json({ ok: true });
+});
+admin.delete('/subscribers/:id', (req, res) => {
+  const before = db.subscribers.length;
+  db.subscribers = db.subscribers.filter(x => x.id !== req.params.id);
+  if (db.subscribers.length === before) return bad(res, 'Subscriber not found.', 404);
+  save();
+  res.json({ ok: true });
+});
+
 app.use('/api/admin', admin);
 
-// features that are not set up yet answer politely instead of crashing the page
-app.all('/api/*', (req, res) => bad(res, "This feature isn't set up yet. Please call or WhatsApp us.", 501));
+// anything else under /api is not a real route
+app.all('/api/*', (req, res) => bad(res, 'Not found.', 404));
 
 /* ---------- the website itself ---------- */
 app.use(express.static(PUBLIC_DIR, { extensions: ['html'], index: 'index.html' }));
@@ -371,5 +525,6 @@ app.use((err, req, res, next) => { // bad JSON etc.
 app.listen(PORT, () => {
   console.log('\n  Mar Me Yullong Farmstay is running');
   console.log('  Website:      http://localhost:' + PORT + '/');
-  console.log('  Owner panel:  http://localhost:' + PORT + '/admin/\n');
+  console.log('  Owner panel:  http://localhost:' + PORT + '/admin/');
+  console.log('  Email alerts: ' + (RESEND_API_KEY && ADMIN_EMAIL ? 'on (to ' + ADMIN_EMAIL + ')' : 'off (set RESEND_API_KEY and ADMIN_EMAIL to turn them on)') + '\n');
 });

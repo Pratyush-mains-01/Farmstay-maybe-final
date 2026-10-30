@@ -45,6 +45,7 @@ const galleryData = [
 // Leave the list empty and the home-page review section stays hidden.
 // Format:
 //   { name:'Guest Name', loc:'Their town', stars:5, date:'March 2026', text:'Their review…', img:'optional-photo-url' }
+// Filled from the server (/api/reviews) when the page loads: every guest review that has not been deleted.
 const reviewsData = [];
 
 // ROOMS — each room has its OWN calendar rules. Edit names, sizes and rules to match your farmstay.
@@ -489,7 +490,7 @@ function setupScroller({ track, prev, next, nav, dots }) {
    ============================================================ */
 function starString(n) { return '★'.repeat(n) + '☆'.repeat(5 - n); }
 
-(function initHomeReviews() {
+function initHomeReviews() {
   const section = $('testimonials-preview');
   if (!section) return; // home page only
   if (!reviewsData.length) { section.hidden = true; return; }
@@ -513,11 +514,12 @@ function starString(n) { return '★'.repeat(n) + '☆'.repeat(5 - n); }
   [...dots.children].forEach((d, i) => { d.type = 'button'; d.setAttribute('aria-label', 'Go to review ' + (i + 1)); d.addEventListener('click', () => ctl.goTo(i)); });
   dots.removeAttribute('aria-hidden');
   dots.hidden = reviewsData.length < 2;
-})();
+}
 
-(function initReviewsPage() {
+function initReviewsPage() {
   const grid = $('reviews-grid'), empty = $('reviews-empty'), summary = $('rating-summary');
   if (!grid) return; // Reviews page only
+  grid.textContent = ''; summary.textContent = ''; // so the page can be redrawn after a new review is sent
   if (!reviewsData.length) { empty.hidden = false; summary.hidden = true; return; }
   empty.hidden = true;
 
@@ -563,7 +565,7 @@ function starString(n) { return '★'.repeat(n) + '☆'.repeat(5 - n); }
   summary.hidden = false;
   observeReveal(summary);
   initRatingBars();
-})();
+}
 
 function initRatingBars() {
   document.querySelectorAll('.rating-bar-fill').forEach(bar => {
@@ -595,6 +597,8 @@ if ($('review-form')) $('review-form').addEventListener('submit', async e => {
   if (!res.ok) { showToast(res.error); return; }
   $('review-form').style.display = 'none';
   $('review-success').classList.add('show');
+  await fetchReviews();   // the new review is live: show it in the list straight away
+  initReviewsPage();
 });
 
 /* ============================================================
@@ -1174,6 +1178,23 @@ document.addEventListener('keydown', e => {
 });
 
 $('year').textContent = new Date().getFullYear();
+
+// Guest reviews come from the server. Without a server the list stays empty and the review areas stay hidden.
+async function fetchReviews() {
+  if (location.protocol === 'file:') return;
+  try {
+    const res = await fetch(API + '/api/reviews', { cache: 'no-store' });
+    if (res.ok) {
+      const data = await res.json();
+      if (data && Array.isArray(data.reviews)) reviewsData.splice(0, reviewsData.length, ...data.reviews);
+    }
+  } catch (_) { /* no server: no reviews to show */ }
+}
+(async function loadReviews() {
+  await fetchReviews();
+  initHomeReviews();
+  initReviewsPage();
+})();
 
 // When the farmstay server is running, it decides the rooms (names, sizes, rules, closed dates).
 // Without a server (for example when previewing the files from a folder) the ROOMS list at the top of this file is used.

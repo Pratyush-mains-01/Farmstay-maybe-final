@@ -26,7 +26,7 @@ function h(tag, props, ...kids) {
 
 /* ---------------- state ---------------- */
 const state = {
-  today: '', rooms: [], bookings: [], blocks: [], sig: '',
+  today: '', rooms: [], bookings: [], blocks: [], reviews: [], messages: [], subscribers: [], sig: '',
   tab: 'overview', filter: 'upcoming', search: '',
   calRoom: null, calY: 0, calM: 0, calDay: null,
 };
@@ -185,9 +185,9 @@ $('logout-btn').addEventListener('click', async () => {
 async function refresh(silent) {
   try {
     const data = await api('/data');
-    const sig = JSON.stringify([data.today, data.rooms, data.bookings, data.blocks]);
+    const sig = JSON.stringify([data.today, data.rooms, data.bookings, data.blocks, data.reviews, data.messages, data.subscribers]);
     const changed = sig !== state.sig;
-    Object.assign(state, { today: data.today, rooms: data.rooms, bookings: data.bookings, blocks: data.blocks, sig });
+    Object.assign(state, { today: data.today, rooms: data.rooms, bookings: data.bookings, blocks: data.blocks, reviews: data.reviews || [], messages: data.messages || [], subscribers: data.subscribers || [], sig });
     if (!state.calRoom || !roomOf(state.calRoom)) state.calRoom = state.rooms[0] ? state.rooms[0].id : null;
     if (!state.calY) { const t = parseISO(state.today); state.calY = t.getFullYear(); state.calM = t.getMonth(); }
     if (changed || !silent) {
@@ -216,11 +216,13 @@ function render() {
   renderPending = false;
   const waiting = state.bookings.filter(b => phase(b) === 'pending').length;
   const badge = $('badge-requests'); badge.textContent = waiting; badge.hidden = waiting === 0;
+  const inbox = inboxCount(), ib = $('badge-inbox'); ib.textContent = inbox; ib.hidden = inbox === 0;
   document.title = (waiting ? '(' + waiting + ') ' : '') + 'Owner Panel | Mar Me Yullong Farmstay';
   if (state.tab === 'overview') renderOverview();
   if (state.tab === 'requests') renderRequests();
   if (state.tab === 'bookings') renderBookings();
   if (state.tab === 'calendar') renderCalendar();
+  if (state.tab === 'inbox') renderInbox();
 }
 
 /* ============================================================
@@ -454,6 +456,101 @@ function renderRequests() {
   const list = h('div', { class: 'list' });
   waiting.forEach(b => list.append(bookingCard(b)));
   root.append(list);
+}
+
+/* ============================================================
+   MESSAGES & REVIEWS TAB
+   - guest reviews (live on the website straight away) can be deleted here
+   - contact-form messages and newsletter sign-ups
+   ============================================================ */
+const inboxCount = () => state.messages.filter(m => !m.done).length;
+const starText = n => '\u2605'.repeat(n) + '\u2606'.repeat(5 - n);
+
+function reviewCard(r) {
+  const card = h('article', { class: 'bcard' });
+  card.append(
+    h('div', { class: 'bcard-head' },
+      h('div', null, h('div', { class: 'bname', text: r.name }), h('div', { class: 'bmeta', text: starText(r.stars) + ' \u00b7 ' + timeAgo(r.createdAt) })),
+      pill('pill-free', 'On website')),
+    h('div', { class: 'bnote', text: r.text }),
+  );
+  card.append(h('div', { class: 'bactions' },
+    h('button', { type: 'button', class: 'btn btn-danger btn-sm', text: 'Delete review', onclick: () => openDialog({
+      title: 'Delete this review?',
+      body: [p(h('strong', { text: r.name }), ' \u00b7 ', starText(r.stars)), p(r.text), p('It is removed from your website for good and cannot be undone.')],
+      actions: [{ label: 'Go back' }, { label: 'Delete', kind: 'btn-danger', onClick: async () => { await api('/reviews/' + r.id, 'DELETE'); await refresh(); toast('Review deleted.'); } }],
+    }) }),
+    h('button', { type: 'button', class: 'btn btn-ghost btn-sm', text: 'Email ' + firstName(r.name), onclick: () => openUrl('mailto:' + r.email) }),
+  ));
+  return card;
+}
+
+function messageCard(m) {
+  const card = h('article', { class: 'bcard' + (m.done ? '' : ' is-new') });
+  const grid = h('div', { class: 'bgrid' });
+  grid.append(h('div', null, h('b', { text: 'Email' }), h('a', { href: 'mailto:' + m.email, text: m.email })));
+  if (m.phone) grid.append(h('div', null, h('b', { text: 'Phone' }), h('a', { href: 'tel:' + m.phone.replace(/[^\d+]/g, ''), text: m.phone })));
+  card.append(
+    h('div', { class: 'bcard-head' },
+      h('div', null, h('div', { class: 'bname', text: m.subject }), h('div', { class: 'bmeta', text: m.name + ' \u00b7 Received ' + timeAgo(m.createdAt) })),
+      pill(m.done ? 'pill-muted' : 'pill-pending', m.done ? 'Dealt with' : 'New')),
+    grid,
+    h('div', { class: 'bnote', text: m.message }),
+  );
+  const actions = h('div', { class: 'bactions' });
+  actions.append(
+    h('button', { type: 'button', class: m.done ? 'btn btn-ghost btn-sm' : 'btn btn-ok', text: m.done ? 'Mark as new' : '\u2714 Mark as dealt with', onclick: async () => {
+      try { await api('/messages/' + m.id + '/done', 'POST', { done: !m.done }); await refresh(); } catch (e) { toast(e.message, true); }
+    } }),
+    h('button', { type: 'button', class: 'btn btn-ghost btn-sm', text: 'Reply by email', onclick: () => openUrl('mailto:' + m.email + '?subject=' + encodeURIComponent('Re: ' + m.subject)) }),
+  );
+  if (m.phone) actions.append(h('button', { type: 'button', class: 'btn btn-ghost btn-sm', text: 'WhatsApp', onclick: () => openUrl('https://wa.me/' + waNumber(m.phone)) }));
+  actions.append(h('button', { type: 'button', class: 'btn btn-danger btn-sm', text: 'Delete', onclick: () => openDialog({
+    title: 'Delete this message?',
+    body: [p(h('strong', { text: m.subject }), ' from ', m.name), p('It is removed for good and cannot be undone.')],
+    actions: [{ label: 'Go back' }, { label: 'Delete', kind: 'btn-danger', onClick: async () => { await api('/messages/' + m.id, 'DELETE'); await refresh(); toast('Message deleted.'); } }],
+  }) }));
+  card.append(actions);
+  return card;
+}
+
+function renderInbox() {
+  const root = $('tab-inbox'); root.textContent = '';
+  const newMsgs = state.messages.filter(m => !m.done);
+  const doneMsgs = state.messages.filter(m => m.done);
+
+  root.append(
+    h('h1', { class: 'page-title' }, 'Messages & ', h('em', { text: 'reviews' })),
+    h('p', { class: 'page-sub', text: 'Guest reviews appear on your website as soon as they are sent. Delete any you do not want shown. Messages come from the Contact page.' }),
+  );
+
+  const section = (title, count, items, emptyText) => {
+    root.append(h('h2', { class: 'page-title inbox-h', text: title + (count ? ' (' + count + ')' : '') }));
+    if (!items.length) { root.append(h('div', { class: 'empty' }, emptyText)); return; }
+    const list = h('div', { class: 'list' }); items.forEach(i => list.append(i)); root.append(list);
+  };
+  section('New messages', newMsgs.length, newMsgs.map(messageCard), 'No new messages.');
+  section('Reviews on your website', state.reviews.length, state.reviews.map(reviewCard), 'No guest reviews yet.');
+  if (doneMsgs.length) section('Messages already dealt with', doneMsgs.length, doneMsgs.map(messageCard), '');
+
+  // newsletter sign-ups
+  root.append(h('h2', { class: 'page-title inbox-h', text: 'Newsletter sign-ups' + (state.subscribers.length ? ' (' + state.subscribers.length + ')' : '') }));
+  if (!state.subscribers.length) { root.append(h('div', { class: 'empty' }, 'Nobody has signed up yet.')); return; }
+  const box = h('div', { class: 'bcard' });
+  box.append(h('div', { class: 'bactions inbox-bar' },
+    h('button', { type: 'button', class: 'btn btn-ghost btn-sm', text: 'Copy all email addresses', onclick: async () => {
+      try { await navigator.clipboard.writeText(state.subscribers.map(x => x.email).join(', ')); toast('Copied. Paste them into the "Bcc" box of a new email.'); }
+      catch (_) { toast('Could not copy. Please select the addresses below and copy them.', true); }
+    } })));
+  const ul = h('div', { class: 'bgrid sub-grid' });
+  state.subscribers.forEach(x => ul.append(h('div', { class: 'sub-row' },
+    h('span', null, x.email, ' ', h('small', { text: '\u00b7 ' + timeAgo(x.createdAt) })),
+    h('button', { type: 'button', class: 'btn btn-ghost btn-sm', text: 'Remove', onclick: () => openDialog({
+      title: 'Remove this address?',
+      body: [p(x.email), p('They will no longer be on your list.')],
+      actions: [{ label: 'Go back' }, { label: 'Remove', kind: 'btn-danger', onClick: async () => { await api('/subscribers/' + x.id, 'DELETE'); await refresh(); toast('Removed.'); } }],
+    }) }))));
+  box.append(ul); root.append(box);
 }
 
 /* ============================================================
