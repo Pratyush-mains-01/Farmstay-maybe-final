@@ -1,0 +1,17 @@
+{
+  "name": "mar-me-yullong-farmstay",
+  "main": "worker/index.js",
+  "compatibility_date": "2026-10-30",
+
+  "assets": {
+    "directory": "./public"
+  },
+
+  "d1_databases": [
+    {
+      "binding": "farmstay_db",
+      "database_name": "farmstay-db",
+      "database_id": "33779131-5a33-4570-a555-da6a407c5b8c"
+    }
+  ]
+}

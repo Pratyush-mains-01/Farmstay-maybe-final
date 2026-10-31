@@ -4,18 +4,18 @@
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
 <meta name="theme-color" content="#0A0A0C"/>
-<title>Book Your Stay | Mar Me Yullong Farmstay</title>
-<meta name="description" content="Choose your room and dates and send a booking request for Mar Me Yullong Farmstay in Bijanbari, Darjeeling."/>
-<meta name="keywords" content="book farmstay, homestay booking, Bijanbari, Darjeeling"/>
-<link rel="canonical" href="https://YOUR-DOMAIN.com/bookings.html"/>
+<title>Location & Directions | Mar Me Yullong Farmstay, Relling</title>
+<meta name="description" content="Find Mar Me Yullong Farmstay in Relling, Bijanbari, Darjeeling. Address, map, phone, email, opening hours and check-in time."/>
+<meta name="keywords" content="Relling, Bijanbari, Darjeeling, farmstay location, directions"/>
+<link rel="canonical" href="https://mar-me-yullong-farmstay.mar-me-yullong.workers.dev/locations.html"/>
 
 <!-- Social sharing (Facebook, WhatsApp, etc.) -->
 <meta property="og:type" content="website"/>
 <meta property="og:site_name" content="Mar Me Yullong Farmstay"/>
-<meta property="og:title" content="Book Your Stay | Mar Me Yullong Farmstay"/>
-<meta property="og:description" content="Choose your room and dates and send a booking request for Mar Me Yullong Farmstay in Bijanbari, Darjeeling."/>
-<meta property="og:url" content="https://YOUR-DOMAIN.com/bookings.html"/>
-<meta property="og:image" content="https://YOUR-DOMAIN.com/Homestaylogo.png"/>
+<meta property="og:title" content="Location & Directions | Mar Me Yullong Farmstay, Relling"/>
+<meta property="og:description" content="Find Mar Me Yullong Farmstay in Relling, Bijanbari, Darjeeling. Address, map, phone, email, opening hours and check-in time."/>
+<meta property="og:url" content="https://mar-me-yullong-farmstay.mar-me-yullong.workers.dev/locations.html"/>
+<meta property="og:image" content="https://mar-me-yullong-farmstay.mar-me-yullong.workers.dev/Homestaylogo.png"/>
 <meta property="og:locale" content="en_IN"/>
 <meta name="twitter:card" content="summary"/>
 
@@ -32,13 +32,13 @@
   "@context": "https://schema.org",
   "@type": "BreadcrumbList",
   "itemListElement": [
-    { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://YOUR-DOMAIN.com/" },
-    { "@type": "ListItem", "position": 2, "name": "Bookings", "item": "https://YOUR-DOMAIN.com/bookings.html" }
+    { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://mar-me-yullong-farmstay.mar-me-yullong.workers.dev/" },
+    { "@type": "ListItem", "position": 2, "name": "Locations", "item": "https://mar-me-yullong-farmstay.mar-me-yullong.workers.dev/locations.html" }
   ]
 }
 </script>
 </head>
-<body data-page="bookings">
+<body data-page="locations">
 
 <!-- ========================================================
      CUSTOM CURSOR
@@ -69,8 +69,8 @@
     <li><a href="index.html" class="nav-link active" data-page="home">Home</a></li>
     <li><a href="gallery.html" class="nav-link" data-page="gallery">Gallery</a></li>
     <li><a href="reviews.html" class="nav-link" data-page="reviews">Reviews</a></li>
-    <li><a href="locations.html" class="nav-link" data-page="locations">Locations</a></li>
-    <li><a href="bookings.html" class="nav-link active" data-page="bookings" aria-current="page">Bookings</a></li>
+    <li><a href="locations.html" class="nav-link active" data-page="locations" aria-current="page">Locations</a></li>
+    <li><a href="bookings.html" class="nav-link" data-page="bookings">Bookings</a></li>
     <li><a href="contact.html" class="nav-link" data-page="contact">Contact</a></li>
   </ul>
   <button class="nav-book-btn" onclick="openModal()" aria-label="Open booking modal">
@@ -86,120 +86,43 @@
   <a href="index.html" class="mobile-nav-link" data-page="home">Home</a>
   <a href="gallery.html" class="mobile-nav-link" data-page="gallery">Gallery</a>
   <a href="reviews.html" class="mobile-nav-link" data-page="reviews">Reviews</a>
-  <a href="locations.html" class="mobile-nav-link" data-page="locations">Locations</a>
-  <a href="bookings.html" class="mobile-nav-link active" data-page="bookings" aria-current="page">Bookings</a>
+  <a href="locations.html" class="mobile-nav-link active" data-page="locations" aria-current="page">Locations</a>
+  <a href="bookings.html" class="mobile-nav-link" data-page="bookings">Bookings</a>
   <a href="contact.html" class="mobile-nav-link" data-page="contact">Contact</a>
   <button class="btn-primary mobile-nav-cta" onclick="closeMobileNav();openModal()">Reserve a Stay ✦</button>
 </div>
 
 <!-- ========================================================
-     BOOKINGS PAGE
+     LOCATIONS PAGE
      ======================================================== -->
-<main id="page-bookings" class="page active">
-  <section id="bookings" aria-label="Make a reservation">
-    <div class="bookings-header">
-      <div class="section-eyebrow">Reserve Your Stay</div>
-      <h1 class="section-title">Make a <em style="font-style:italic;color:var(--gold)">Reservation</em></h1>
+<main id="page-locations" class="page active">
+  <section id="locations" aria-label="Our locations">
+    <div class="locations-header">
+      <div class="section-eyebrow">Find Us</div>
+      <h1 class="section-title">Our <em style="font-style:italic;color:var(--gold)">Location</em></h1>
       <div class="gold-rule" style="margin:1rem auto"></div>
     </div>
-    <div class="booking-wrapper reveal">
-      <div class="booking-steps" role="list">
-        <div class="booking-step active" data-step="1" role="listitem">Your Details</div>
-        <div class="booking-step" data-step="2" role="listitem">Date &amp; Time</div>
-        <div class="booking-step" data-step="3" role="listitem">Confirmation</div>
+    <div class="locations-grid reveal">
+      <div class="location-card">
+        <div class="location-img"><img src="https://images.unsplash.com/photo-1564501049412-61c2a3083791?w=800&q=80" alt="Mar Me Yullong Farmstay" loading="lazy"/></div>
+        <div class="location-info">
+          <h3 class="location-name">Mar Me Yullong Farmstay</h3>
+          <div class="location-detail"><span class="location-detail-icon" aria-hidden="true">📍</span><span>Relling, Bijanbari, Darjeeling</span></div>
+          <div class="location-detail"><span class="location-detail-icon" aria-hidden="true">📞</span><a href="tel:+918629978234" data-contact="phone">+91 86299 78234</a></div>
+          <div class="location-detail"><span class="location-detail-icon" aria-hidden="true">📧</span><a href="mailto:temp@gmail.com" data-contact="email">temp@gmail.com</a></div>
+          <div class="location-detail"><span class="location-detail-icon" aria-hidden="true">🕐</span><span>Open 24 hours · Check-in 1 pm</span></div>
+          <a href="https://www.google.com/maps/search/?api=1&amp;query=27.037487,88.157249" target="_blank" rel="noopener" class="directions-btn" aria-label="Get directions to Mar Me Yullong Farmstay">Get Directions →</a>
+        </div>
       </div>
-      <form id="booking-form" novalidate>
-        <!-- Step 1 -->
-        <div id="booking-step-1">
-          <h3 class="form-section-title">Guest Information</h3>
-          <div class="form-grid">
-            <div class="form-group">
-              <label for="bk-name">Full Name</label>
-              <input type="text" id="bk-name" name="name" autocomplete="name" class="form-control" placeholder="Your Name" required aria-required="true"/>
-            </div>
-            <div class="form-group">
-              <label for="bk-email">Email Address</label>
-              <input type="email" id="bk-email" name="email" autocomplete="email" inputmode="email" class="form-control" placeholder="you@example.com" required aria-required="true"/>
-            </div>
-          </div>
-          <div class="form-grid">
-            <div class="form-group">
-              <label for="bk-phone">Phone</label>
-              <input type="tel" id="bk-phone" name="phone" autocomplete="tel" inputmode="tel" class="form-control" placeholder="+91 98765 43210" required aria-required="true"/>
-            </div>
-            <div class="form-group">
-              <label for="bk-guests">Number of Guests</label>
-              <select id="bk-guests" class="form-control" aria-required="true">
-                <option value="">Select guests</option>
-                <option>1 Guest</option>
-                <option>2 Guests</option>
-                <option>3 Guests</option>
-                <option>4 Guests</option>
-                <option>5+ Guests</option>
-              </select>
-            </div>
-          </div>
-          <div class="form-group">
-            <label for="bk-occasion">Occasion</label>
-            <select id="bk-occasion" class="form-control">
-              <option value="">Select occasion</option>
-              <option>Leisure Stay</option>
-              <option>Anniversary</option>
-              <option>Honeymoon</option>
-              <option>Birthday Celebration</option>
-              <option>Business Stay</option>
-              <option>Special Event</option>
-            </select>
-          </div>
-          <button type="button" class="submit-btn" onclick="bookingNextStep(1)" aria-label="Continue to date selection">Continue →</button>
-        </div>
-        <!-- Step 2 -->
-        <div id="booking-step-2" style="display:none">
-          <h3 class="form-section-title">Choose Your Room &amp; Dates</h3>
-          <div class="form-group">
-            <label for="bk-room">Room</label>
-            <select id="bk-room" class="form-control" aria-required="true"></select>
-            <p class="room-info" id="bk-room-info" aria-live="polite"></p>
-          </div>
-          <div class="form-group">
-            <label id="bk-cal-label">Dates (from – to)</label>
-            <div class="range-cal" id="bk-cal" role="group" aria-labelledby="bk-cal-label"></div>
-            <input type="hidden" id="bk-checkin"/>
-            <input type="hidden" id="bk-checkout"/>
-          </div>
-          <div class="form-group">
-            <label>Preferred Arrival Time</label>
-            <div class="availability-grid" role="group" aria-label="Select arrival time">
-              <button type="button" class="slot-btn available" onclick="selectSlot(this)">12:00 PM</button>
-              <button type="button" class="slot-btn available" onclick="selectSlot(this)">1:00 PM</button>
-              <button type="button" class="slot-btn available" onclick="selectSlot(this)">2:00 PM</button>
-              <button type="button" class="slot-btn available" onclick="selectSlot(this)">3:00 PM</button>
-              <button type="button" class="slot-btn available" onclick="selectSlot(this)">4:00 PM</button>
-              <button type="button" class="slot-btn unavailable" onclick="selectSlot(this)" aria-disabled="true">5:00 PM</button>
-              <button type="button" class="slot-btn available" onclick="selectSlot(this)">6:00 PM</button>
-              <button type="button" class="slot-btn available" onclick="selectSlot(this)">7:00 PM</button>
-            </div>
-          </div>
-          <div class="form-group">
-            <label for="bk-requests">Special Requests</label>
-            <textarea id="bk-requests" class="form-control" placeholder="Dietary requirements, room preferences, special arrangements…"></textarea>
-          </div>
-          <div style="display:flex;gap:1rem">
-            <button type="button" class="btn-outline" style="flex:1;padding:1rem;border-radius:var(--radius-sm);font-size:0.72rem;letter-spacing:0.15em;text-transform:uppercase" onclick="bookingPrevStep(2)" aria-label="Go back">← Back</button>
-            <button type="button" class="submit-btn" id="bk-submit-btn" style="flex:2" onclick="bookingNextStep(2)" aria-label="Send booking request">Send Request →</button>
-          </div>
-        </div>
-        <!-- Step 3 - Confirmation -->
-        <div id="booking-step-3" style="display:none">
-          <div class="booking-confirm" id="booking-confirm">
-            <div class="confirm-icon" aria-hidden="true">✦</div>
-            <h3 style="font-family:var(--ff-display);font-size:2rem;font-weight:300;color:var(--text-primary)">Request Received</h3>
-            <p style="color:var(--text-secondary);margin:1rem 0;font-size:0.9rem">Thank you! We have received your booking request and will confirm with you shortly.</p>
-            <div id="confirm-summary" style="background:rgba(201,169,110,0.06);border:1px solid var(--gold-dim);border-radius:var(--radius-sm);padding:1.5rem;margin:2rem 0;text-align:left;font-size:0.85rem;color:var(--text-secondary);line-height:2"></div>
-            <button class="submit-btn" onclick="resetBooking()" aria-label="Make another reservation">Make Another Reservation</button>
-          </div>
-        </div>
-      </form>
+    </div>
+    <!-- Map -->
+    <div class="map-embed reveal">
+      <iframe
+        title="Map to Mar Me Yullong Farmstay"
+        src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d4641.309882587943!2d88.15724875191194!3d27.037487265187103!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x39e5d30071c8d99b%3A0x5956eeed1c80e132!2sLittle%20Rangeet%20River!5e0!3m2!1sen!2sin!4v1774077835398!5m2!1sen!2sin"
+        loading="lazy"
+        allowfullscreen
+        referrerpolicy="no-referrer-when-downgrade"></iframe>
     </div>
   </section>
 </main>

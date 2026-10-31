@@ -1,0 +1,5 @@
+User-agent: *
+Disallow: /admin/
+Disallow: /api/
+
+Sitemap: https://mar-me-yullong-farmstay.mar-me-yullong.workers.dev/sitemap.xml

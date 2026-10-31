@@ -4,18 +4,18 @@
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
 <meta name="theme-color" content="#0A0A0C"/>
-<title>Guest Reviews | Mar Me Yullong Farmstay</title>
-<meta name="description" content="Read what guests say about staying at Mar Me Yullong Farmstay in Bijanbari, Darjeeling, and share your own experience."/>
-<meta name="keywords" content="farmstay reviews, homestay reviews, Bijanbari, Darjeeling"/>
-<link rel="canonical" href="https://YOUR-DOMAIN.com/reviews.html"/>
+<title>Book Your Stay | Mar Me Yullong Farmstay</title>
+<meta name="description" content="Choose your room and dates and send a booking request for Mar Me Yullong Farmstay in Bijanbari, Darjeeling."/>
+<meta name="keywords" content="book farmstay, homestay booking, Bijanbari, Darjeeling"/>
+<link rel="canonical" href="https://mar-me-yullong-farmstay.mar-me-yullong.workers.dev/bookings.html"/>
 
 <!-- Social sharing (Facebook, WhatsApp, etc.) -->
 <meta property="og:type" content="website"/>
 <meta property="og:site_name" content="Mar Me Yullong Farmstay"/>
-<meta property="og:title" content="Guest Reviews | Mar Me Yullong Farmstay"/>
-<meta property="og:description" content="Read what guests say about staying at Mar Me Yullong Farmstay in Bijanbari, Darjeeling, and share your own experience."/>
-<meta property="og:url" content="https://YOUR-DOMAIN.com/reviews.html"/>
-<meta property="og:image" content="https://YOUR-DOMAIN.com/Homestaylogo.png"/>
+<meta property="og:title" content="Book Your Stay | Mar Me Yullong Farmstay"/>
+<meta property="og:description" content="Choose your room and dates and send a booking request for Mar Me Yullong Farmstay in Bijanbari, Darjeeling."/>
+<meta property="og:url" content="https://mar-me-yullong-farmstay.mar-me-yullong.workers.dev/bookings.html"/>
+<meta property="og:image" content="https://mar-me-yullong-farmstay.mar-me-yullong.workers.dev/Homestaylogo.png"/>
 <meta property="og:locale" content="en_IN"/>
 <meta name="twitter:card" content="summary"/>
 
@@ -32,13 +32,13 @@
   "@context": "https://schema.org",
   "@type": "BreadcrumbList",
   "itemListElement": [
-    { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://YOUR-DOMAIN.com/" },
-    { "@type": "ListItem", "position": 2, "name": "Reviews", "item": "https://YOUR-DOMAIN.com/reviews.html" }
+    { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://mar-me-yullong-farmstay.mar-me-yullong.workers.dev/" },
+    { "@type": "ListItem", "position": 2, "name": "Bookings", "item": "https://mar-me-yullong-farmstay.mar-me-yullong.workers.dev/bookings.html" }
   ]
 }
 </script>
 </head>
-<body data-page="reviews">
+<body data-page="bookings">
 
 <!-- ========================================================
      CUSTOM CURSOR
@@ -68,9 +68,9 @@
   <ul class="nav-links" role="list">
     <li><a href="index.html" class="nav-link active" data-page="home">Home</a></li>
     <li><a href="gallery.html" class="nav-link" data-page="gallery">Gallery</a></li>
-    <li><a href="reviews.html" class="nav-link active" data-page="reviews" aria-current="page">Reviews</a></li>
+    <li><a href="reviews.html" class="nav-link" data-page="reviews">Reviews</a></li>
     <li><a href="locations.html" class="nav-link" data-page="locations">Locations</a></li>
-    <li><a href="bookings.html" class="nav-link" data-page="bookings">Bookings</a></li>
+    <li><a href="bookings.html" class="nav-link active" data-page="bookings" aria-current="page">Bookings</a></li>
     <li><a href="contact.html" class="nav-link" data-page="contact">Contact</a></li>
   </ul>
   <button class="nav-book-btn" onclick="openModal()" aria-label="Open booking modal">
@@ -85,60 +85,121 @@
 <div id="mobile-nav" role="dialog" aria-label="Mobile navigation" aria-hidden="true">
   <a href="index.html" class="mobile-nav-link" data-page="home">Home</a>
   <a href="gallery.html" class="mobile-nav-link" data-page="gallery">Gallery</a>
-  <a href="reviews.html" class="mobile-nav-link active" data-page="reviews" aria-current="page">Reviews</a>
+  <a href="reviews.html" class="mobile-nav-link" data-page="reviews">Reviews</a>
   <a href="locations.html" class="mobile-nav-link" data-page="locations">Locations</a>
-  <a href="bookings.html" class="mobile-nav-link" data-page="bookings">Bookings</a>
+  <a href="bookings.html" class="mobile-nav-link active" data-page="bookings" aria-current="page">Bookings</a>
   <a href="contact.html" class="mobile-nav-link" data-page="contact">Contact</a>
   <button class="btn-primary mobile-nav-cta" onclick="closeMobileNav();openModal()">Reserve a Stay ✦</button>
 </div>
 
 <!-- ========================================================
-     REVIEWS PAGE
+     BOOKINGS PAGE
      ======================================================== -->
-<main id="page-reviews" class="page active">
-  <section id="reviews" aria-label="Guest reviews">
-    <div class="reviews-page-header">
-      <div class="section-eyebrow">Guest Stories</div>
-      <h1 class="section-title">Reviews &amp; <em style="font-style:italic;color:var(--gold)">Testimonials</em></h1>
+<main id="page-bookings" class="page active">
+  <section id="bookings" aria-label="Make a reservation">
+    <div class="bookings-header">
+      <div class="section-eyebrow">Reserve Your Stay</div>
+      <h1 class="section-title">Make a <em style="font-style:italic;color:var(--gold)">Reservation</em></h1>
       <div class="gold-rule" style="margin:1rem auto"></div>
     </div>
-    <!-- Overall rating (built automatically from real reviews) -->
-    <div id="rating-summary" class="overall-rating reveal" hidden></div>
-    <!-- Review cards -->
-    <div class="reviews-grid" id="reviews-grid">
-      <!-- inserted by JS -->
-    </div>
-    <p class="empty-note" id="reviews-empty">No reviews yet. Stayed with us? We would love to hear about it below.</p>
-    <!-- Leave a review -->
-    <div class="review-form-section max-w-800 reveal">
-      <h3>Share Your Experience</h3>
-      <div class="star-rating-input" role="group" aria-label="Select your rating">
-        <button type="button" class="star-btn" data-star="1" aria-label="1 star">☆</button>
-        <button type="button" class="star-btn" data-star="2" aria-label="2 stars">☆</button>
-        <button type="button" class="star-btn" data-star="3" aria-label="3 stars">☆</button>
-        <button type="button" class="star-btn" data-star="4" aria-label="4 stars">☆</button>
-        <button type="button" class="star-btn" data-star="5" aria-label="5 stars">☆</button>
+    <div class="booking-wrapper reveal">
+      <div class="booking-steps" role="list">
+        <div class="booking-step active" data-step="1" role="listitem">Your Details</div>
+        <div class="booking-step" data-step="2" role="listitem">Date &amp; Time</div>
+        <div class="booking-step" data-step="3" role="listitem">Confirmation</div>
       </div>
-      <form id="review-form" novalidate>
-        <div class="form-grid">
-          <div class="form-group">
-            <label for="rv-name">Your Name</label>
-            <input type="text" id="rv-name" name="name" autocomplete="name" class="form-control" placeholder="Your name" required aria-required="true"/>
+      <form id="booking-form" novalidate>
+        <!-- Step 1 -->
+        <div id="booking-step-1">
+          <h3 class="form-section-title">Guest Information</h3>
+          <div class="form-grid">
+            <div class="form-group">
+              <label for="bk-name">Full Name</label>
+              <input type="text" id="bk-name" name="name" autocomplete="name" class="form-control" placeholder="Your Name" required aria-required="true"/>
+            </div>
+            <div class="form-group">
+              <label for="bk-email">Email Address</label>
+              <input type="email" id="bk-email" name="email" autocomplete="email" inputmode="email" class="form-control" placeholder="you@example.com" required aria-required="true"/>
+            </div>
+          </div>
+          <div class="form-grid">
+            <div class="form-group">
+              <label for="bk-phone">Phone</label>
+              <input type="tel" id="bk-phone" name="phone" autocomplete="tel" inputmode="tel" class="form-control" placeholder="+91 98765 43210" required aria-required="true"/>
+            </div>
+            <div class="form-group">
+              <label for="bk-guests">Number of Guests</label>
+              <select id="bk-guests" class="form-control" aria-required="true">
+                <option value="">Select guests</option>
+                <option>1 Guest</option>
+                <option>2 Guests</option>
+                <option>3 Guests</option>
+                <option>4 Guests</option>
+                <option>5+ Guests</option>
+              </select>
+            </div>
           </div>
           <div class="form-group">
-            <label for="rv-email">Email Address</label>
-            <input type="email" id="rv-email" name="email" autocomplete="email" inputmode="email" class="form-control" placeholder="you@example.com" required aria-required="true"/>
+            <label for="bk-occasion">Occasion</label>
+            <select id="bk-occasion" class="form-control">
+              <option value="">Select occasion</option>
+              <option>Leisure Stay</option>
+              <option>Anniversary</option>
+              <option>Honeymoon</option>
+              <option>Birthday Celebration</option>
+              <option>Business Stay</option>
+              <option>Special Event</option>
+            </select>
+          </div>
+          <button type="button" class="submit-btn" onclick="bookingNextStep(1)" aria-label="Continue to date selection">Continue →</button>
+        </div>
+        <!-- Step 2 -->
+        <div id="booking-step-2" style="display:none">
+          <h3 class="form-section-title">Choose Your Room &amp; Dates</h3>
+          <div class="form-group">
+            <label for="bk-room">Room</label>
+            <select id="bk-room" class="form-control" aria-required="true"></select>
+            <p class="room-info" id="bk-room-info" aria-live="polite"></p>
+          </div>
+          <div class="form-group">
+            <label id="bk-cal-label">Dates (from – to)</label>
+            <div class="range-cal" id="bk-cal" role="group" aria-labelledby="bk-cal-label"></div>
+            <input type="hidden" id="bk-checkin"/>
+            <input type="hidden" id="bk-checkout"/>
+          </div>
+          <div class="form-group">
+            <label>Preferred Arrival Time</label>
+            <div class="availability-grid" role="group" aria-label="Select arrival time">
+              <button type="button" class="slot-btn available" onclick="selectSlot(this)">12:00 PM</button>
+              <button type="button" class="slot-btn available" onclick="selectSlot(this)">1:00 PM</button>
+              <button type="button" class="slot-btn available" onclick="selectSlot(this)">2:00 PM</button>
+              <button type="button" class="slot-btn available" onclick="selectSlot(this)">3:00 PM</button>
+              <button type="button" class="slot-btn available" onclick="selectSlot(this)">4:00 PM</button>
+              <button type="button" class="slot-btn unavailable" onclick="selectSlot(this)" aria-disabled="true">5:00 PM</button>
+              <button type="button" class="slot-btn available" onclick="selectSlot(this)">6:00 PM</button>
+              <button type="button" class="slot-btn available" onclick="selectSlot(this)">7:00 PM</button>
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="bk-requests">Special Requests</label>
+            <textarea id="bk-requests" class="form-control" placeholder="Dietary requirements, room preferences, special arrangements…"></textarea>
+          </div>
+          <div style="display:flex;gap:1rem">
+            <button type="button" class="btn-outline" style="flex:1;padding:1rem;border-radius:var(--radius-sm);font-size:0.72rem;letter-spacing:0.15em;text-transform:uppercase" onclick="bookingPrevStep(2)" aria-label="Go back">← Back</button>
+            <button type="button" class="submit-btn" id="bk-submit-btn" style="flex:2" onclick="bookingNextStep(2)" aria-label="Send booking request">Send Request →</button>
           </div>
         </div>
-        <div class="form-group">
-          <label for="rv-comment">Your Review</label>
-          <textarea id="rv-comment" class="form-control" placeholder="Tell us about your experience…" required aria-required="true"></textarea>
+        <!-- Step 3 - Confirmation -->
+        <div id="booking-step-3" style="display:none">
+          <div class="booking-confirm" id="booking-confirm">
+            <div class="confirm-icon" aria-hidden="true">✦</div>
+            <h3 style="font-family:var(--ff-display);font-size:2rem;font-weight:300;color:var(--text-primary)">Request Received</h3>
+            <p style="color:var(--text-secondary);margin:1rem 0;font-size:0.9rem">Thank you! We have received your booking request and will confirm with you shortly.</p>
+            <div id="confirm-summary" style="background:rgba(201,169,110,0.06);border:1px solid var(--gold-dim);border-radius:var(--radius-sm);padding:1.5rem;margin:2rem 0;text-align:left;font-size:0.85rem;color:var(--text-secondary);line-height:2"></div>
+            <button class="submit-btn" onclick="resetBooking()" aria-label="Make another reservation">Make Another Reservation</button>
+          </div>
         </div>
-        <button type="submit" class="submit-btn" aria-label="Submit your review">Submit Review</button>
       </form>
-      <div class="success-msg" id="review-success" role="alert" aria-live="polite">
-        ✦ Thank you — your review has been submitted.
-      </div>
     </div>
   </section>
 </main>
